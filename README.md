@@ -1,4 +1,7 @@
-# Ogi Prompt
+[![CI](https://github.com/ogidimitrov/prompt/actions/workflows/php.yml/badge.svg)](https://github.com/ogidimitrov/prompt/actions)
+
+
+# Prompt
 
 A PHP package that transforms class properties into XML-formatted prompts, ready for Large Language Model (LLM) API calls. It recursively handles arrays, collections, nested arrays, and nested `Prompt` instances, converting them into XML with appropriate tags.
 
