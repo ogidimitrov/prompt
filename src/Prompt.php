@@ -20,8 +20,16 @@ class Prompt
         return $xml;
     }
 
-    private function toXml($name, $value)
+    private function toXml($name, $value, &$processed = [])
     {
+
+        if (is_object($value)) {
+            if (in_array($value, $processed, true)) {
+                return "<{$name}></{$name}>\n";
+            }
+            $processed[] = $value;
+        }
+
         if (is_array($value) || $value instanceof \Traversable) {
             $xml = "<{$name}>\n";
             foreach ($value as $key => $val) {
@@ -67,6 +75,11 @@ class Prompt
 
     private function escape($value)
     {
+
+        if (is_resource($value)) {
+            return '';
+        }
+
         if (is_object($value)) {
             if (method_exists($value, '__toString')) {
                 $value = (string)$value;

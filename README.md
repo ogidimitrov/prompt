@@ -13,7 +13,16 @@ A PHP package that transforms class properties into XML-formatted prompts, ready
   - [Handling Arrays](#handling-arrays)
   - [Using Collections](#using-collections)
   - [Nested Prompt Instances](#nested-prompt-instances)
-  - [Custom Objects with `toArray()` or `__toString()`](#custom-objects-with-toarray-or-__tostring__)
+  - [Custom Objects with `toArray()` or `__toString__`](#custom-objects-with-toarray-or-__tostring__)
+  - [Handling Special Cases](#handling-special-cases)
+    - [Private and Protected Properties](#private-and-protected-properties)
+    - [Null and Empty Values](#null-and-empty-values)
+    - [Boolean Values](#boolean-values)
+    - [Numeric Values](#numeric-values)
+    - [Special Characters](#special-characters)
+    - [Objects Without `toArray()` or `__toString__`](#objects-without-toarray-or-__tostring__)
+    - [Circular References](#circular-references)
+- [Testing](#testing)
 - [Contributing](#contributing)
 - [License](#license)
 - [Additional Notes](#additional-notes)
@@ -36,6 +45,7 @@ composer require ogi/prompt
 - **Array and Collection Handling**: Supports arrays, collections, and nested arrays, using `<entry>` and `<list>` tags where appropriate.
 - **Nested Prompt Instances**: Allows properties to be instances of `Prompt`, rendering them recursively within `<prompt>` tags.
 - **Custom Object Support**: Handles objects implementing `toArray()` or `__toString()`.
+- **Edge Case Handling**: Manages special cases like private/protected properties, null values, booleans, numerics, special characters, and circular references.
 - **Recursive Processing**: Recursively processes nested arrays and collections to any depth.
 - **Easy Integration**: Extend the `Prompt` class and define your data; the `render()` method handles the rest.
 
@@ -195,7 +205,7 @@ echo $prompt->render();
 
 ---
 
-### Custom Objects with `toArray()` or `__toString()`
+### Custom Objects with `toArray()` or `__toString__`
 
 The package can handle custom objects that implement `toArray()` or `__toString()`.
 
@@ -273,6 +283,218 @@ echo $prompt->render();
 
 ---
 
+### Handling Special Cases
+
+#### Private and Protected Properties
+
+Only **public** properties are included in the XML output. Private and protected properties are excluded.
+
+```php
+<?php
+
+class MyPrompt extends Prompt
+{
+    public $publicProperty = 'Public Value';
+    protected $protectedProperty = 'Protected Value';
+    private $privateProperty = 'Private Value';
+}
+
+$prompt = new MyPrompt();
+echo $prompt->render();
+```
+
+**Output:**
+
+```xml
+<publicProperty>Public Value</publicProperty>
+```
+
+#### Null and Empty Values
+
+Properties with `null` values or empty arrays are handled gracefully.
+
+```php
+<?php
+
+class MyPrompt extends Prompt
+{
+    public $nullProperty = null;
+    public $emptyArray = [];
+}
+
+$prompt = new MyPrompt();
+echo $prompt->render();
+```
+
+**Output:**
+
+```xml
+<nullProperty></nullProperty>
+<emptyArray>
+</emptyArray>
+```
+
+#### Boolean Values
+
+Boolean values are converted as follows:
+
+- `true` becomes `1`
+- `false` becomes an empty string
+
+```php
+<?php
+
+class MyPrompt extends Prompt
+{
+    public $trueProperty = true;
+    public $falseProperty = false;
+}
+
+$prompt = new MyPrompt();
+echo $prompt->render();
+```
+
+**Output:**
+
+```xml
+<trueProperty>1</trueProperty>
+<falseProperty></falseProperty>
+```
+
+#### Numeric Values
+
+Numeric values are converted to strings and included in the output.
+
+```php
+<?php
+
+class MyPrompt extends Prompt
+{
+    public $integerProperty = 42;
+    public $floatProperty = 3.14;
+}
+
+$prompt = new MyPrompt();
+echo $prompt->render();
+```
+
+**Output:**
+
+```xml
+<integerProperty>42</integerProperty>
+<floatProperty>3.14</floatProperty>
+```
+
+#### Special Characters
+
+Special characters are properly escaped to produce valid XML.
+
+```php
+<?php
+
+class MyPrompt extends Prompt
+{
+    public $specialChars = 'Special < & > " \' Characters';
+}
+
+$prompt = new MyPrompt();
+echo $prompt->render();
+```
+
+**Output:**
+
+```xml
+<specialChars>Special &lt; &amp; &gt; &quot; &apos; Characters</specialChars>
+```
+
+#### Objects Without `toArray()` or `__toString__`
+
+Objects that cannot be converted to a string or array are represented as empty tags.
+
+```php
+<?php
+
+class NonStringableObject
+{
+    public $data = 'Some Data';
+}
+
+class MyPrompt extends Prompt
+{
+    public $nonStringableObject;
+
+    public function __construct()
+    {
+        $this->nonStringableObject = new NonStringableObject();
+    }
+}
+
+$prompt = new MyPrompt();
+echo $prompt->render();
+```
+
+**Output:**
+
+```xml
+<nonStringableObject></nonStringableObject>
+```
+
+#### Circular References
+
+The package handles circular references gracefully to prevent infinite recursion.
+
+```php
+<?php
+
+class MyPrompt extends Prompt
+{
+    public $self;
+
+    public function __construct()
+    {
+        $this->self = $this;
+    }
+}
+
+$prompt = new MyPrompt();
+echo $prompt->render();
+```
+
+**Output:**
+
+```xml
+<self>
+</self>
+```
+
+---
+
+## Testing
+
+The package includes a comprehensive test suite using PHPUnit to ensure reliability and correctness. Tests cover:
+
+- Inclusion of public properties and exclusion of private/protected ones.
+- Handling of null values, empty arrays, booleans, numerics, and special characters.
+- Processing of objects with and without `toArray()` or `__toString__`.
+- Recursive rendering of nested `Prompt` instances.
+- Edge cases like circular references and mixed-type arrays.
+
+### Running Tests
+
+To run the tests, execute:
+
+```bash
+./vendor/bin/phpunit
+```
+
+Or if you have added a Composer script:
+
+```bash
+composer test
+```
+
+---
+
 ## Contributing
 
 Contributions are welcome! Please follow these steps:
@@ -295,10 +517,19 @@ This project is licensed under the [MIT License](LICENSE).
 
 - **PHP Version**: Ensure your PHP version is 7.2 or higher.
 - **Dependencies**: If you use collections from frameworks like Laravel, make sure to include the necessary packages (e.g., `illuminate/support`).
-- **Error Handling**: The package gracefully handles objects without `__toString()` or `toArray()` by ignoring them or representing them as empty strings.
+- **Error Handling**: The package gracefully handles objects without `__toString()` or `toArray()` by representing them as empty strings.
+- **Circular References**: Circular references are detected to prevent infinite loops during rendering.
 - **Testing**: It's recommended to write tests using PHPUnit to ensure the reliability of your implementation.
 - **Customization**: Feel free to extend the `Prompt` class and override methods for custom behavior.
+- **Composer Configuration**: As this is a library, it's recommended not to commit the `composer.lock` file to your repository.
+- **Git Ignore**: Include a `.gitignore` file to exclude unnecessary files and directories (e.g., `vendor/`, `.idea/`, `composer.lock`, etc.).
 
 ---
 
-Let me know if you have any questions or need further assistance!
+**Need Help?**
+
+If you have any questions or need assistance, please open an issue on the [GitHub repository](https://github.com/yourusername/ogi-prompt).
+
+---
+
+**Happy Coding!**
