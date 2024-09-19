@@ -4,6 +4,19 @@ A PHP package that transforms class properties into XML-formatted prompts, ready
 
 ---
 
+## Why XML Structured Prompts?
+
+Structured prompts are essential when interacting with Large Language Models (LLMs) to ensure consistency, clarity, and optimal performance. XML provides a standardized way to structure data, making it an excellent choice for formatting prompts:
+
+- **Consistency Across Models**: XML's hierarchical structure allows for consistent formatting of prompts, which can be beneficial when working with different models or APIs.
+- **Improved Parsing**: XML is a widely accepted format that can be easily parsed and validated, reducing the likelihood of errors in prompt interpretation.
+- **Flexibility**: XML's ability to represent complex nested data makes it suitable for constructing detailed and intricate prompts.
+- **Readability**: Structured XML prompts are more readable and maintainable, aiding in debugging and prompt optimization.
+
+By using XML-formatted prompts, developers can provide clear and unambiguous instructions to LLMs, potentially enhancing the models' understanding and response accuracy.
+
+---
+
 ## Table of Contents
 
 - [Installation](#installation)
@@ -107,9 +120,9 @@ echo $prompt->render();
 
 ```xml
 <questions>
-<entry>What is your name?</entry>
-<entry>How old are you?</entry>
-<entry>What is your favorite color?</entry>
+  <entry>What is your name?</entry>
+  <entry>How old are you?</entry>
+  <entry>What is your favorite color?</entry>
 </questions>
 ```
 
@@ -147,13 +160,13 @@ echo $prompt->render();
 
 ```xml
 <items>
-<entry>First Item</entry>
-<entry>Second Item</entry>
-<list>
-<entry>Nested Item 1</entry>
-<entry>Nested Item 2</entry>
-</list>
-<entry>Third Item</entry>
+  <entry>First Item</entry>
+  <entry>Second Item</entry>
+  <list>
+    <entry>Nested Item 1</entry>
+    <entry>Nested Item 2</entry>
+  </list>
+  <entry>Third Item</entry>
 </items>
 ```
 
@@ -197,8 +210,8 @@ echo $prompt->render();
 <prompt>
 <message>This is a sub-prompt.</message>
 <details>
-<detail1>Detail One</detail1>
-<detail2>Detail Two</detail2>
+  <detail1>Detail One</detail1>
+  <detail2>Detail Two</detail2>
 </details>
 </prompt>
 ```
@@ -243,8 +256,8 @@ echo $prompt->render();
 
 ```xml
 <customData>
-<keyA>Value A</keyA>
-<keyB>Value B</keyB>
+  <keyA>Value A</keyA>
+  <keyB>Value B</keyB>
 </customData>
 ```
 
