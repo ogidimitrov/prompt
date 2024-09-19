@@ -2,7 +2,6 @@
 
 namespace Ogi\Prompt;
 
-
 class Prompt
 {
     public function render()
@@ -23,39 +22,58 @@ class Prompt
 
     private function toXml($name, $value)
     {
-        if (is_array($value)) {
+        if (is_array($value) || $value instanceof \Traversable) {
             $xml = "<{$name}>\n";
             foreach ($value as $key => $val) {
-                if (is_array($val)) {
-                    if (is_numeric($key)) {
-                        // Numerical key with array value: wrap in <list>
-                        $xml .= "<list>\n";
-                        $xml .= $this->toXml('entry', $val);
-                        $xml .= "</list>\n";
-                    } else {
-                        // Associative key with array value: recurse
-                        $xml .= $this->toXml($key, $val);
-                    }
-                } else {
-                    if (is_numeric($key)) {
-                        // Numerical key with scalar value: <entry>
-                        $xml .= "<entry>{$this->escape($val)}</entry>\n";
-                    } else {
-                        // Associative key with scalar value
-                        $xml .= "<{$key}>{$this->escape($val)}</{$key}>\n";
-                    }
-                }
+                $xml .= $this->processValue($key, $val);
             }
             $xml .= "</{$name}>\n";
+        } elseif ($value instanceof Prompt) {
+            $xml = "<prompt>\n";
+            $xml .= $value->render();
+            $xml .= "</prompt>\n";
+        } elseif (is_object($value) && method_exists($value, 'toArray')) {
+            $arrayValue = $value->toArray();
+            $xml = $this->toXml($name, $arrayValue);
+        } elseif (is_object($value) && method_exists($value, '__toString')) {
+            $xml = "<{$name}>{$this->escape((string)$value)}</{$name}>\n";
         } else {
-            // Scalar value
             $xml = "<{$name}>{$this->escape($value)}</{$name}>\n";
+        }
+        return $xml;
+    }
+
+    private function processValue($key, $val)
+    {
+        if (is_array($val) || $val instanceof \Traversable) {
+            if (is_numeric($key)) {
+                $xml = "<list>\n";
+                $xml .= $this->toXml('entry', $val);
+                $xml .= "</list>\n";
+            } else {
+                $xml = $this->toXml($key, $val);
+            }
+        } elseif ($val instanceof Prompt) {
+            $xml = "<prompt>\n";
+            $xml .= $val->render();
+            $xml .= "</prompt>\n";
+        } elseif (is_numeric($key)) {
+            $xml = "<entry>{$this->escape($val)}</entry>\n";
+        } else {
+            $xml = "<{$key}>{$this->escape($val)}</{$key}>\n";
         }
         return $xml;
     }
 
     private function escape($value)
     {
+        if (is_object($value)) {
+            if (method_exists($value, '__toString')) {
+                $value = (string)$value;
+            } else {
+                $value = '';
+            }
+        }
         return htmlspecialchars($value, ENT_QUOTES | ENT_XML1, 'UTF-8');
     }
 }
