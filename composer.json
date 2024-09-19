@@ -1,0 +1,14 @@
+{
+  "name": "ogi/prompt",
+  "description": "A PHP package to convert class properties into XML-formatted prompts for LLM APIs.",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Ogi\\Prompt\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=7.2"
+  }
+}
