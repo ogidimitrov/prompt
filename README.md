@@ -541,7 +541,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 **Need Help?**
 
-If you have any questions or need assistance, please open an issue on the [GitHub repository](https://github.com/yourusername/ogi-prompt).
+If you have any questions or need assistance, please open an issue on the [GitHub repository](https://github.com/ogidimitrov/ogi-prompt).
 
 ---
 
