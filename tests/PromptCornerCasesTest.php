@@ -20,7 +20,7 @@ class PromptCornerCasesTest extends TestCase
             }
         };
 
-        $expectedXml = "<resourceProperty></resourceProperty>\n";
+        $expectedXml = "<prompt>\n<resourceProperty></resourceProperty>\n</prompt>\n";
         $this->assertEquals($expectedXml, $mockPrompt->render());
 
         fclose($resource);
@@ -51,21 +51,20 @@ class PromptCornerCasesTest extends TestCase
             }
         };
 
-        $expectedXml = "<mixedArray>\n"
+        $expectedXml = "<prompt>\n<mixedArray>\n"
             . "<entry>string</entry>\n"
             . "<entry>123</entry>\n"
             . "<entry></entry>\n"
-            . "<entry>1</entry>\n"
+            . "<entry>true</entry>\n"
             . "<entry>Stringable Object</entry>\n"
             . "<entry></entry>\n"
-            . "<list>\n"
             . "<entry>\n"
             . "<nestedArray>\n"
             . "<key>value</key>\n"
             . "</nestedArray>\n"
             . "</entry>\n"
-            . "</list>\n"
-            . "</mixedArray>\n";
+            . "</mixedArray>\n"
+        . "</prompt>\n";
 
         $this->assertEquals($expectedXml, $mockPrompt->render());
 
@@ -80,7 +79,7 @@ class PromptCornerCasesTest extends TestCase
             private $privateProperty = 'Private Value';
         };
 
-        $expectedXml = "<publicProperty>Public Value</publicProperty>\n";
+        $expectedXml = "<prompt>\n<publicProperty>Public Value</publicProperty>\n</prompt>\n";
         $this->assertEquals($expectedXml, $mockPrompt->render());
     }
 
@@ -90,7 +89,7 @@ class PromptCornerCasesTest extends TestCase
             public $emptyArray = [];
         };
 
-        $expectedXml = "<emptyArray>\n</emptyArray>\n";
+        $expectedXml = "<prompt>\n<emptyArray>\n</emptyArray>\n</prompt>\n";
         $this->assertEquals($expectedXml, $mockPrompt->render());
     }
 
@@ -100,7 +99,7 @@ class PromptCornerCasesTest extends TestCase
             public $nullProperty = null;
         };
 
-        $expectedXml = "<nullProperty></nullProperty>\n";
+        $expectedXml = "<prompt>\n<nullProperty></nullProperty>\n</prompt>\n";
         $this->assertEquals($expectedXml, $mockPrompt->render());
     }
 
@@ -111,7 +110,7 @@ class PromptCornerCasesTest extends TestCase
             public $falseProperty = false;
         };
 
-        $expectedXml = "<trueProperty>1</trueProperty>\n<falseProperty></falseProperty>\n";
+        $expectedXml = "<prompt>\n<trueProperty>true</trueProperty>\n<falseProperty>false</falseProperty>\n</prompt>\n";
         $this->assertEquals($expectedXml, $mockPrompt->render());
     }
 
@@ -122,7 +121,7 @@ class PromptCornerCasesTest extends TestCase
             public $floatProperty = 3.14;
         };
 
-        $expectedXml = "<integerProperty>42</integerProperty>\n<floatProperty>3.14</floatProperty>\n";
+        $expectedXml = "<prompt>\n<integerProperty>42</integerProperty>\n<floatProperty>3.14</floatProperty>\n</prompt>\n";
         $this->assertEquals($expectedXml, $mockPrompt->render());
     }
 
@@ -132,7 +131,7 @@ class PromptCornerCasesTest extends TestCase
             public $specialChars = 'Special < & > " \' Characters';
         };
 
-        $expectedXml = "<specialChars>Special &lt; &amp; &gt; &quot; &apos; Characters</specialChars>\n";
+        $expectedXml = "<prompt>\n<specialChars>Special &lt; &amp; &gt; &quot; &apos; Characters</specialChars>\n</prompt>\n";
         $this->assertEquals($expectedXml, $mockPrompt->render());
     }
 
@@ -149,7 +148,7 @@ class PromptCornerCasesTest extends TestCase
             }
         };
 
-        $expectedXml = "<nonStringableObject></nonStringableObject>\n";
+        $expectedXml = "<prompt>\n<nonStringableObject></nonStringableObject>\n</prompt>\n";
         $this->assertEquals($expectedXml, $mockPrompt->render());
     }
 
@@ -179,7 +178,7 @@ class PromptCornerCasesTest extends TestCase
             }
         };
 
-        $expectedXml = "<parentProperty>Parent Value</parentProperty>\n<prompt>\n<childProperty>Child Value</childProperty>\n<prompt>\n<grandChildProperty>GrandChild Value</grandChildProperty>\n</prompt>\n</prompt>\n";
+        $expectedXml = "<prompt>\n<parentProperty>Parent Value</parentProperty>\n<childPrompt>\n<prompt>\n<childProperty>Child Value</childProperty>\n<grandChildPrompt>\n<prompt>\n<grandChildProperty>GrandChild Value</grandChildProperty>\n</prompt>\n</grandChildPrompt>\n</prompt>\n</childPrompt>\n</prompt>\n";
         $this->assertEquals($expectedXml, $parentPrompt->render());
     }
 }

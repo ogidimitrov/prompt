@@ -1,4 +1,4 @@
-[![CI](https://github.com/ogidimitrov/prompt/actions/workflows/php.yml/badge.svg)](https://github.com/ogidimitrov/prompt/actions)
+[![CI](https://github.com/ogidimitrov/prompt/actions/workflows/tests.yml/badge.svg)](https://github.com/ogidimitrov/prompt/actions)
 
 
 # Prompt
@@ -29,6 +29,7 @@ By using XML-formatted prompts, developers can provide clear and unambiguous ins
   - [Handling Arrays](#handling-arrays)
   - [Using Collections](#using-collections)
   - [Nested Prompt Instances](#nested-prompt-instances)
+  - [Using the GeneralPromptTemplate](#using-the-generalprompttemplate)
   - [Custom Objects with `toArray()` or `__toString__`](#custom-objects-with-toarray-or-__tostring__)
   - [Handling Special Cases](#handling-special-cases)
     - [Private and Protected Properties](#private-and-protected-properties)
@@ -64,6 +65,7 @@ composer require ogi/prompt
 - **Edge Case Handling**: Manages special cases like private/protected properties, null values, booleans, numerics, special characters, and circular references.
 - **Recursive Processing**: Recursively processes nested arrays and collections to any depth.
 - **Easy Integration**: Extend the `Prompt` class and define your data; the `render()` method handles the rest.
+- **Templates**: Extend the `GeneralPromptTemplate` class and leverage its setters to populate a versatile, general-use template prompt for your data.
 
 ---
 
@@ -82,8 +84,11 @@ use Ogi\Prompt\Prompt;
 
 class MyPrompt extends Prompt
 {
-    public $title = 'Ogi Prompt Basic Example';
-    public $message = 'Hello, this is a basic example.';
+    public $purpose = 'Who are the leaders of England, France and Russia when World War 2 started';
+    public $instructions = [
+        'For definition of leader consider titles - king, prime-minister, president',
+        'Present the output in a markdown table with columns leader title,name, country'
+    ];
 }
 
 $prompt = new MyPrompt();
@@ -93,8 +98,13 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<title>Ogi Prompt Basic Example</title>
-<message>Hello, this is a basic example.</message>
+<prompt>
+  <purpose>Who are the leaders of England, France and Russia when World War 2 started</purpose>
+  <instructions>
+    <entry>For definition of leader consider titles - king, prime-minister, president</entry>
+    <entry>Present the output in a markdown table with columns leader title,name, country</entry>
+  </instructions>
+</prompt>
 ```
 
 ---
@@ -122,11 +132,13 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<questions>
-  <entry>What is your name?</entry>
-  <entry>How old are you?</entry>
-  <entry>What is your favorite color?</entry>
-</questions>
+<prompt>
+  <questions>
+    <entry>What is your name?</entry>
+    <entry>How old are you?</entry>
+    <entry>What is your favorite color?</entry>
+  </questions>
+</prompt>
 ```
 
 ---
@@ -162,15 +174,17 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<items>
-  <entry>First Item</entry>
-  <entry>Second Item</entry>
-  <list>
-    <entry>Nested Item 1</entry>
-    <entry>Nested Item 2</entry>
-  </list>
-  <entry>Third Item</entry>
-</items>
+<prompt>
+  <items>
+    <entry>First Item</entry>
+    <entry>Second Item</entry>
+    <list>
+      <entry>Nested Item 1</entry>
+      <entry>Nested Item 2</entry>
+    </list>
+    <entry>Third Item</entry>
+  </items>
+</prompt>
 ```
 
 ---
@@ -209,17 +223,104 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<title>Main Prompt</title>
 <prompt>
-<message>This is a sub-prompt.</message>
-<details>
-  <detail1>Detail One</detail1>
-  <detail2>Detail Two</detail2>
-</details>
+  <title>Main Prompt</title>
+  <subPrompt>
+    <prompt>
+      <message>This is a sub-prompt.</message>
+      <details>
+        <detail1>Detail One</detail1>
+        <detail2>Detail Two</detail2>
+      </details>
+    </prompt>
+  </subPrompt>
 </prompt>
 ```
 
 ---
+
+### Using the GeneralPromptTemplate
+
+The `GeneralPromptTemplate` is an abstract class that allows you to define more structured prompts with context, purpose, goals, and instructions for input and output. You can extend this class and set properties to generate XML prompts.
+
+```php
+<?php
+
+require 'vendor/autoload.php';
+
+use Ogi\Prompt\Templates\GeneralPromptTemplate;
+
+class MyPrompt extends GeneralPromptTemplate
+{
+    public function setInput($data): void
+    {
+        $this->input = $data;
+    }
+}
+
+$prompt = new MyPrompt();
+$prompt->addContext('Provide recommendations based on user input.');
+$prompt->addPurpose('To give tailored advice for improving coding practices.');
+$prompt->addGoal('Ensure the recommendations are practical and concise.');
+$prompt->addInputDefinition('A brief description of the code the user wants feedback on.');
+$prompt->addOutputDefinition('A list of suggestions to improve the user’s code.');
+$prompt->addHowtoSteps([
+    'Analyze the provided code.',
+    'Identify areas of improvement.',
+    'Provide actionable feedback with examples.',
+]);
+
+echo $prompt->render();
+
+```
+
+**Output:**
+
+```xml
+<prompt>
+  <context>Provide recommendations based on user input.</context>
+  <purpose>To give tailored advice for improving coding practices.</purpose>
+  <goal>Ensure the recommendations are practical and concise.</goal>
+  <instructions>
+    <input>
+      <definition>A brief description of the code the user wants feedback on.</definition>
+      <structure></structure>
+      <value-meaning></value-meaning>
+      <possible-values></possible-values>
+      <if-instructions-per-type>
+      </if-instructions-per-type>
+    </input>
+    <output>
+      <definition>A list of suggestions to improve the user’s code.</definition>
+      <structure></structure>
+      <value-meaning></value-meaning>
+      <possible-values></possible-values>
+      <if-instructions-per-type>
+      </if-instructions-per-type>
+      <example-valid-output></example-valid-output>
+      <example-invalid-output></example-invalid-output>
+    </output>
+    <howto>
+      <definition></definition>
+      <steps>
+        <entry>Analyze the provided code.</entry>
+        <entry>Identify areas of improvement.</entry>
+        <entry>Provide actionable feedback with examples.</entry>
+      </steps>
+      <corner-cases>
+      </corner-cases>
+    </howto>
+  </instructions>
+  <considerations>
+  </considerations>
+  <struggles>
+  </struggles>
+  <input></input>
+</prompt>
+```
+
+---
+
 
 ### Custom Objects with `toArray()` or `__toString__`
 
@@ -248,6 +349,7 @@ class MyPrompt extends Prompt
     public function __construct()
     {
         $this->customData = new CustomObject();
+        $this->customArray = [1,2, new CustomObject()];
     }
 }
 
@@ -258,10 +360,20 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<customData>
-  <keyA>Value A</keyA>
-  <keyB>Value B</keyB>
-</customData>
+<prompt>
+  <customData>
+    <keyA>Value A</keyA>
+    <keyB>Value B</keyB>
+  </customData>
+  <customArray>
+    <entry>1</entry>
+    <entry>2</entry>
+    <entry>
+      <keyA>Value A</keyA>
+      <keyB>Value B</keyB>
+    </keyB>
+  </customArray>
+</prompt>
 ```
 
 #### **Objects with `__toString()`**
@@ -294,7 +406,9 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<stringable>I can be converted to a string!</stringable>
+<prompt>
+  <stringable>I can be converted to a string!</stringable>
+</prompt>
 ```
 
 ---
@@ -322,7 +436,9 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<publicProperty>Public Value</publicProperty>
+<prompt>
+  <publicProperty>Public Value</publicProperty>
+</prompt>
 ```
 
 #### Null and Empty Values
@@ -345,9 +461,11 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<nullProperty></nullProperty>
-<emptyArray>
-</emptyArray>
+<prompt>
+  <nullProperty></nullProperty>
+  <emptyArray>
+  </emptyArray>
+</prompt>
 ```
 
 #### Boolean Values
@@ -373,8 +491,10 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<trueProperty>1</trueProperty>
-<falseProperty></falseProperty>
+<prompt>
+  <trueProperty>true</trueProperty>
+  <falseProperty>false</falseProperty>
+</prompt>
 ```
 
 #### Numeric Values
@@ -397,8 +517,10 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<integerProperty>42</integerProperty>
-<floatProperty>3.14</floatProperty>
+<prompt>
+  <integerProperty>42</integerProperty>
+  <floatProperty>3.14</floatProperty>
+</prompt>
 ```
 
 #### Special Characters
@@ -420,7 +542,9 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<specialChars>Special &lt; &amp; &gt; &quot; &apos; Characters</specialChars>
+<prompt>
+  <specialChars>Special &lt; &amp; &gt; &quot; &apos; Characters</specialChars>
+</prompt>
 ```
 
 #### Objects Without `toArray()` or `__toString__`
@@ -452,7 +576,9 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<nonStringableObject></nonStringableObject>
+<prompt>
+  <nonStringableObject></nonStringableObject>
+</prompt>
 ```
 
 #### Circular References
@@ -464,11 +590,11 @@ The package handles circular references gracefully to prevent infinite recursion
 
 class MyPrompt extends Prompt
 {
-    public $self;
+    public $me;
 
     public function __construct()
     {
-        $this->self = $this;
+        $this->me = $this;
     }
 }
 
@@ -479,8 +605,11 @@ echo $prompt->render();
 **Output:**
 
 ```xml
-<self>
-</self>
+<prompt>
+  <me>
+    <self></self>
+  </me>
+</prompt>
 ```
 
 ---
@@ -531,14 +660,9 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Additional Notes
 
-- **PHP Version**: Ensure your PHP version is 7.2 or higher.
+- **PHP Version**: Ensure your PHP version is 7.4 or higher.
 - **Dependencies**: If you use collections from frameworks like Laravel, make sure to include the necessary packages (e.g., `illuminate/support`).
-- **Error Handling**: The package gracefully handles objects without `__toString()` or `toArray()` by representing them as empty strings.
 - **Circular References**: Circular references are detected to prevent infinite loops during rendering.
-- **Testing**: It's recommended to write tests using PHPUnit to ensure the reliability of your implementation.
-- **Customization**: Feel free to extend the `Prompt` class and override methods for custom behavior.
-- **Composer Configuration**: As this is a library, it's recommended not to commit the `composer.lock` file to your repository.
-- **Git Ignore**: Include a `.gitignore` file to exclude unnecessary files and directories (e.g., `vendor/`, `.idea/`, `composer.lock`, etc.).
 
 ---
 

@@ -8,8 +8,13 @@
       "Ogi\\Prompt\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Ogi\\tests\\": "tests/"
+    }
+  },
   "require": {
-    "php": ">=7.2"
+    "php": ">=7.4"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.6"
