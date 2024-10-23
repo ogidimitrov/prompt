@@ -1,4 +1,9 @@
 [![CI](https://github.com/ogidimitrov/prompt/actions/workflows/tests.yml/badge.svg)](https://github.com/ogidimitrov/prompt/actions)
+![Packagist](https://img.shields.io/packagist/dt/ogi/prompt.svg)
+![License](https://img.shields.io/packagist/l/ogi/prompt.svg)
+![GitHub issues](https://img.shields.io/github/issues/ogidimitrov/prompt.svg)
+![GitHub stars](https://img.shields.io/github/stars/ogidimitrov/prompt.svg?style=social)
+![GitHub last commit](https://img.shields.io/github/last-commit/ogidimitrov/prompt.svg)
 
 
 # Prompt
